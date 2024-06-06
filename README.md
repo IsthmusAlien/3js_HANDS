@@ -4,6 +4,8 @@ This is a simple implementation of MediaPipe Hands in conjunction with the Three
 
 Try it out [here](https://kiki54qweb.pythonanywhere.com/)
 
+![Screenshot_20240606_232500](https://github.com/IsthmusAlien/3js_HANDS/assets/131596732/9e89507f-7638-4527-87a4-9144449196da)
+
 ### Dependencies
 
 * flask

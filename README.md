@@ -2,6 +2,8 @@
 
 This is a simple implementation of MediaPipe Hands in conjunction with the Three.js library.
 
+Try it out [here](https://kiki54qweb.pythonanywhere.com/)
+
 ### Dependencies
 
 * flask

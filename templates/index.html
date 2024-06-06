@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>3js_HANDS</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='static/styles.css') }}">
+        <link rel="icon" sizes="300x300" href="{{ url_for('static', filename='static/imgs/logo.png') }}" type="image/png">
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+        <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+        <script type="importmap">
+        {
+            "imports": {
+            "three": "https://unpkg.com/three@v0.163.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@v0.163.0/examples/jsm/"
+            }
+        }
+        </script>
+    </head>
+    <body>
+        <video id="input" autoplay playsinline style="display : none;"></video>
+        <div style="display : none;" id="control"></div>
+        <canvas id="output" width="1280" height="720" style="display : none;"></canvas>
+        <div id="top_left_box">
+          <div class="top_left_boxes" id="zoom_left">
+            <h2>ZOOM</h2>
+          </div>
+          <div class="top_left_boxes" id="move_left">
+            <h2>MOVE</h2>
+          </div>
+          <div class="top_left_boxes" id="idle_left">
+            <h2>IDLE</h2>
+          </div>
+        </div>
+        <div id="top_right_box">
+          <div class="top_right_boxes" id="rotateY_right">
+            <h2>ROTATE_Y</h2>
+          </div>
+          <div class="top_right_boxes" id="rotateX_right">
+            <h2>ROTATE_X</h2>
+          </div>
+          <div class="top_right_boxes" id="idle_right">
+            <h2>IDLE</h2>
+          </div>
+        </div>
+        <script type="module">
+        
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { MapControls } from 'three/addons/controls/MapControls.js';
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0xF0F0F0);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        document.body.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(4, 5, 11);
+
+        const controls = new MapControls( camera, renderer.domElement );
+        controls.enableDamping = true;
+        controls.enablePan = true;
+        controls.minDistance = 0;
+        controls.maxDistance = Infinity;
+        controls.autoRotate = false;
+        controls.target.set(0, 0, 0);
+        controls.screenSpacePanning = false; 
+        controls.update();
+
+        const hemisphereLight_below = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
+        hemisphereLight_below.position.set(0, -40, 0);
+        scene.add(hemisphereLight_below);
+
+        const hemisphereLight_above = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
+        hemisphereLight_above.position.set(0, 40, 0);
+        scene.add(hemisphereLight_above);
+
+        const hemisphereLight_front = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
+        hemisphereLight_front.position.set(40, 0, 0);
+        scene.add(hemisphereLight_front);
+
+        const hemisphereLight_back = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
+        hemisphereLight_back.position.set(-40, 0, 0);
+        scene.add(hemisphereLight_back);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        let model;
+        const loader = new GLTFLoader().setPath('public/model/');
+        loader.load('scene.gltf', (gltf) => {
+          model = gltf.scene;
+
+          model.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+
+          model.position.set(0, 0, -1);
+          model.updateWorldMatrix(true, false);
+          scaleModelToFitView(model, camera);
+          scene.add(model);
+
+        }, (xhr) => {
+          console.log(`loading ${xhr.loaded / xhr.total * 100}%`);
+        }, (error) => {
+          console.error(error);
+        });
+
+        window.addEventListener('resize', () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+        }
+
+        animate();
+
+       function scaleModelToFitView(model, camera) { 
+          const boundingBox = new THREE.Box3().setFromObject(model);
+          const size = boundingBox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+
+          const fov = camera.fov * (Math.PI / 180);
+          const cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+
+          const scaleFactor = cameraZ / maxDim * 0.75; 
+          model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+          const boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+          const offset = boundingSphere.center;
+          model.position.sub(offset); 
+
+          camera.position.set(0, 0, cameraZ * 1.5); 
+          camera.lookAt(new THREE.Vector3(0, 0, 0));
+          controls.target.set(0, 0, 0);
+          controls.update();
+
+          camera.updateProjectionMatrix();
+        }
+
+        const video3 = document.getElementById('input');
+        const out3 = document.getElementById('output');
+        const controlsElement3 = document.getElementById('control');
+        const fpsControl = new FPS();
+        const ZOOM_BOX = document.getElementById('zoom_left');
+        const MOVE_BOX = document.getElementById('move_left');
+        const IDLE_LEFT = document.getElementById('idle_left');
+        const ROTATE_X_BOX = document.getElementById('rotateX_right');
+        const ROTATE_Y_BOX= document.getElementById('rotateY_right');
+        const IDLE_RIGHT = document.getElementById('idle_right');
+
+        document.addEventListener('DOMContentLoaded', function() {
+          askPermission();
+
+          function askPermission() {
+            const constraints = {
+              audio: false,
+              video: {
+                  facingMode: "environment"
+              }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+              .then(function(mediaStream) {
+                  video3.srcObject = mediaStream;
+                  video3.play();
+              })
+              .catch(function(err) {
+                  console.log("There's an error: " + err.message);
+              });
+          }
+
+          let change_MODE_LEFT;
+          let MODE_LEFT = 0;
+
+          function isFistLeft(landmarks) {
+
+            if (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100) {
+
+              if (change_MODE_LEFT) {
+                MODE_LEFT = MODE_LEFT === 2 ? 0 : MODE_LEFT + 1;
+                change_MODE_LEFT = false;
+              }
+              return true;
+            }
+            change_MODE_LEFT = true;
+            return false;
+          }
+
+          let change_MODE_RIGHT; 
+          let MODE_RIGHT = 0;
+
+          function isFistRight(landmarks) {
+
+            if (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100) {   
+
+              if (change_MODE_RIGHT) {
+                MODE_RIGHT = MODE_RIGHT === 2 ? 0 : MODE_RIGHT + 1;
+                change_MODE_RIGHT = false;
+              }
+              return true;
+            }
+            change_MODE_RIGHT = true;
+            return false;
+          }
+
+          let prevPalmMidpoint = null;
+          const rotationFactor = 10;
+          const zoomFactor = 100;
+
+          function rotateModelBasedOnPalmMovement (currentPalmMidpoint) {
+            if (prevPalmMidpoint) {
+
+             if (MODE_RIGHT === 0) {
+
+              ROTATE_X_BOX.style.backgroundColor = "red";
+              ROTATE_Y_BOX.style.backgroundColor = "green";
+              IDLE_RIGHT.style.backgroundColor = "red";
+
+              let dx = Math.round(currentPalmMidpoint.x*100)/100 - Math.round(prevPalmMidpoint.x*100)/100;              
+              let yRotation = dx * rotationFactor;
+              model.rotation.y += yRotation;
+             } else if (MODE_RIGHT === 1) {
+
+              ROTATE_X_BOX.style.backgroundColor = "green";
+              ROTATE_Y_BOX.style.backgroundColor = "red";
+              IDLE_RIGHT.style.backgroundColor = "red";
+
+              let dy = Math.round(currentPalmMidpoint.y*100)/100 - Math.round(prevPalmMidpoint.y*100)/100;
+              let xRotation = dy * rotationFactor;
+              model.rotation.x += xRotation;
+             } else {
+
+              ROTATE_X_BOX.style.backgroundColor = "red";
+              ROTATE_Y_BOX.style.backgroundColor = "red";
+              IDLE_RIGHT.style.backgroundColor = "green";
+
+             }
+            }
+            prevPalmMidpoint = { ...currentPalmMidpoint };
+          }
+
+        function moveAndzoomModelBasedOnPalmMovement (canvasX, canvasY, currentPalmMidpoint) {
+            
+          if (MODE_LEFT === 0) {
+
+            ZOOM_BOX.style.backgroundColor = "red";
+            MOVE_BOX.style.backgroundColor = "green";
+            IDLE_LEFT.style.backgroundColor = "red";
+
+            let vector = new THREE.Vector3();
+            vector.set(
+              (canvasX / window.innerWidth) * 2 - 0.5, 
+              - (canvasY / window.innerHeight) * 2 + 0.5,
+              -1 
+            );
+            vector.unproject(camera);
+            let dir = vector.sub(camera.position).normalize();
+            let distance = - camera.position.z / dir.z;
+            let pos = camera.position.clone().add(dir.multiplyScalar(distance));
+            model.position.copy(pos);
+
+          } else if (MODE_LEFT === 1) {
+
+            ZOOM_BOX.style.backgroundColor = "green";
+            MOVE_BOX.style.backgroundColor = "red";
+            IDLE_LEFT.style.backgroundColor = "red";
+            
+            if (prevPalmMidpoint) {
+              let dy = Math.round(currentPalmMidpoint.y*100)/100 - Math.round(prevPalmMidpoint.y*100)/100; 
+              let zZoom = dy * zoomFactor;
+              camera.position.z += zZoom;
+            }
+            prevPalmMidpoint = { ...currentPalmMidpoint };
+          } else {
+
+            ZOOM_BOX.style.backgroundColor = "red";
+            MOVE_BOX.style.backgroundColor = "red";
+            IDLE_LEFT.style.backgroundColor = "green";
+
+          }
+        }
+
+        //  let prevPalmMidpointLeft = null;
+        //  let prevPalmMidpointRight = null;
+
+        //  function areBothFist (results) {
+//
+        //    let LeftHandLandmarks, RightHandLandmarks; 
+        //    
+        //    if (results.multiHandedness[0].label === 'Right') {
+        //      RightHandLandmarks = results.multiHandLandmarks[0];
+        //      LeftHandLandmarks = results.multiHandLandmarks[1];
+        //    } else {
+        //      RightHandLandmarks = results.multiHandLandmarks[1];
+        //      LeftHandLandmarks = results.multiHandLandmarks[0];
+        //    }
+//
+        //    if ((Math.round(LeftHandLandmarks[12].y*100)/100 <  Math.round(LeftHandLandmarks[10].y*100)/100) 
+        //    && (Math.round(RightHandLandmarks[12].y*100)/100 <  Math.round(RightHandLandmarks[10].y*100)/100)) {
+        //      return true;
+        //    }     
+        //    return false;
+        //  }
+//
+        //  function zoomModelBasedOnPalmMovement (palmMidpoint) {
+        //    
+        //  }
+
+          const palmLandmarks = [0, 1, 5, 9, 13, 17];
+          let xSum = null, ySum = null, zSum = null;
+          let hand_detectError = 0;
+          let hand_detect = null;
+
+          function onResultsHands(results) {
+              document.body.classList.add('loaded');
+              fpsControl.tick();
+
+              const canvasCtx3 = out3.getContext('2d');
+
+              out3.width = video3.videoWidth; 
+              out3.height = video3.videoHeight;
+
+              canvasCtx3.save();
+              canvasCtx3.clearRect(0, 0, out3.width, out3.height);
+              canvasCtx3.drawImage(video3, 0, 0, out3.width, out3.height); 
+
+              if (results.multiHandLandmarks && results.multiHandedness) {
+                if (results.multiHandLandmarks.length === 0) {
+                  if (hand_detectError !== 0 || hand_detect) {
+                    hand_detectError = 0;
+                    hand_detect = null;
+                  }
+                }
+                for (let index = 0; index < results.multiHandLandmarks.length; index++) {
+
+                  let landmarks = results.multiHandLandmarks[index];
+                  let classification = results.multiHandedness[index];
+
+                  xSum = 0, ySum = 0, zSum = 0;
+
+                  palmLandmarks.forEach(index => {
+                    xSum += landmarks[index].x;
+                    ySum += landmarks[index].y;
+                    zSum += landmarks[index].z;
+                  });
+
+                  let palmMidpoint = {
+                    x: xSum / palmLandmarks.length,
+                    y: ySum / palmLandmarks.length,
+                    z: zSum / palmLandmarks.length,
+                  };
+
+                  let canvasX = palmMidpoint.x * out3.width;
+                  let canvasY = palmMidpoint.y * out3.height;
+
+                  if (hand_detect === null || hand_detect !== classification.label) {
+                    if (++hand_detectError === 4 || hand_detect === null) {
+                      hand_detect = classification.label;
+                      hand_detectError = 0;
+                    }
+                  } else {
+                    hand_detectError = 0; 
+                  }
+
+                  if (results.multiHandLandmarks.length === 1) {
+                    if (isFistLeft(landmarks) && hand_detect === 'Right') {
+                      moveAndzoomModelBasedOnPalmMovement(canvasX, canvasY, palmMidpoint);
+                    } else if (isFistRight(landmarks) && hand_detect === 'Left') {
+                      rotateModelBasedOnPalmMovement(palmMidpoint);
+                    } else {
+                      prevPalmMidpoint = null;
+                    }
+                  }// else {
+                   //
+                   //  if (areBothFist(results, classification)) {
+                   //    //zoomModelBasedOnPalmMovement(palmMidpoint);
+                   //  } else {
+                   //    //prevPalmMidpointLeft = null;
+                   //    //prevPalmMidpointRight = null;
+                   //  } 
+                   //
+                   //}
+
+                }
+              } 
+              canvasCtx3.restore();
+          }
+
+          const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+          }});
+          hands.onResults(onResultsHands);
+
+          async function captureFrame() {
+            const track = video3.srcObject.getVideoTracks()[0];
+            const imageCapture = new ImageCapture(track);
+            try {
+              const bitmap = await imageCapture.grabFrame();
+              out3.width = bitmap.width;
+              out3.height = bitmap.height;
+
+              const ctx = out3.getContext('2d');
+              ctx.drawImage(bitmap, 0, 0);
+
+              const imageBitmap = await createImageBitmap(out3);
+              await hands.send({ image: imageBitmap });
+
+              requestAnimationFrame(captureFrame);
+            } catch (err) {
+              console.error('Error grabbing frame: ', err);
+            }
+          }
+
+          video3.onloadeddata = () => {
+              captureFrame();
+          };
+
+          hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+          });
+
+          new ControlPanel(controlsElement3, {
+            selfieMode: false,
+            maxNumHands: 2,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.7
+            }).add([
+            new StaticText({title: 'MediaPipe Hands'}),
+            fpsControl,
+            new Toggle({title: 'Selfie Mode', field: 'selfieMode'}),
+            new Slider(
+                {title: 'Max Number of Hands', field: 'maxNumHands', range: [1, 4], step: 1}),
+            new Slider({
+              title: 'Min Detection Confidence',
+              field: 'minDetectionConfidence',
+              range: [0, 1],
+              step: 0.01
+            })
+          ]);
+        });
+
+        </script>
+    </body>
+</html>

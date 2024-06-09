@@ -4,7 +4,7 @@ This is a simple implementation of MediaPipe Hands in conjunction with the Three
 
 Try it out [here](https://kiki54qweb.pythonanywhere.com/)
 
-![Screenshot_20240606_232500](https://github.com/IsthmusAlien/3js_HANDS/assets/131596732/a6428fc1-b153-4f95-883d-ab99e39ee345)
+![337389950-a6428fc1-b153-4f95-883d-ab99e39ee345](https://github.com/IsthmusAlien/3js_HANDS/assets/131596732/1b0936a5-9337-49c8-bddf-d1bfdcf2824d)
 
 ### Dependencies
 

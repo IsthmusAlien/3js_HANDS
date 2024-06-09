@@ -20,6 +20,10 @@ python app.py
 
 IsthmusAlien
 
+## Model By
+
+*[jvitorsouzadesign](https://sketchfab.com/3d-models/skull-salazar-downloadable-eeed09437afb4e1ea8a6ff3b0e9964ad)
+
 ## Acknowledgments
 
 * [dgreenheck](https://github.com/dgreenheck/threejs-gltf-import)

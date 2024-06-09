@@ -88,3 +88,14 @@ h2 {
 #rotateX_right {
     margin-right: 25px;
 }
+
+#link {
+    bottom: 20px;
+    left: 20px;
+    color: #000;
+    z-index: 1;
+    position: absolute;
+    text-decoration: none;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+}

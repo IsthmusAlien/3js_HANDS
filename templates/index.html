@@ -23,7 +23,6 @@
     <body>
         <video id="input" autoplay playsinline style="display : none;"></video>
         <div style="display : none;" id="control"></div>
-        <canvas id="output" width="1280" height="720" style="display : none;"></canvas>
         <div id="top_left_box">
           <div class="top_left_boxes" id="zoom_left">
             <h2>ZOOM</h2>
@@ -159,7 +158,6 @@
         }
 
         const video3 = document.getElementById('input');
-        const out3 = document.getElementById('output');
         const controlsElement3 = document.getElementById('control');
         const fpsControl = new FPS();
         const ZOOM_BOX = document.getElementById('zoom_left');
@@ -359,15 +357,6 @@
               document.body.classList.add('loaded');
               fpsControl.tick();
 
-              const canvasCtx3 = out3.getContext('2d');
-
-              out3.width = video3.videoWidth; 
-              out3.height = video3.videoHeight;
-
-              canvasCtx3.save();
-              canvasCtx3.clearRect(0, 0, out3.width, out3.height);
-              canvasCtx3.drawImage(video3, 0, 0, out3.width, out3.height); 
-
               if (results.multiHandLandmarks && results.multiHandedness) {
                 if (results.multiHandLandmarks.length === 0) {
                   if (hand_detectError !== 0 || hand_detect) {
@@ -394,8 +383,8 @@
                     z: zSum / palmLandmarks.length,
                   };
 
-                  let canvasX = palmMidpoint.x * out3.width;
-                  let canvasY = palmMidpoint.y * out3.height;
+                  let canvasX = palmMidpoint.x * video3.videoWidth; 
+                  let canvasY = palmMidpoint.y *  video3.videoHeight;
 
                   if (hand_detect === null || hand_detect !== classification.label) {
                     if (++hand_detectError === 4 || hand_detect === null) {
@@ -427,7 +416,6 @@
 
                 }
               } 
-              canvasCtx3.restore();
           }
 
           const hands = new Hands({locateFile: (file) => {

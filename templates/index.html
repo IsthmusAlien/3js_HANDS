@@ -170,25 +170,48 @@
         const IDLE_RIGHT = document.getElementById('idle_right');
 
         document.addEventListener('DOMContentLoaded', function() {
-          askPermission();
+          const constraints = { audio: false, video: { facingMode: "environment"} };
 
-          function askPermission() {
-            const constraints = {
-              audio: false,
-              video: {
-                  facingMode: "environment"
+          async function getMediaStream() {
+              try {
+                  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                  const videoTrack = stream.getTracks()[0];
+
+                  const trackProcessor = new MediaStreamTrackProcessor({ track: videoTrack });
+                  const trackGenerator = new MediaStreamTrackGenerator({ kind: 'video' });
+
+                  const transformer = new TransformStream({
+                      async transform(videoFrame, controller) {
+                          if (videoFrame) {
+                              try {
+                                  const newFrame = new VideoFrame(videoFrame);
+                                  newFrame.width = videoFrame.displayWidth;
+                                  newFrame.height = videoFrame.displayHeight;
+                                  await hands.send({ image: newFrame });
+                                  controller.enqueue(newFrame);
+                              } catch (error) {
+                                  console.error('Error processing video frame:', error);
+                              } finally {
+                                  videoFrame.close();
+                              }
+                          } else {
+                              console.warn('Received an empty or invalid video frame.');
+                          }
+                      },
+                  });
+
+                  trackProcessor.readable.pipeThrough(transformer).pipeTo(trackGenerator.writable);
+
+                  const streamAfter = new MediaStream([trackGenerator]);
+                  video3.srcObject = streamAfter;
+
+              } catch (err) {
+                  console.error('Error accessing media devices.', err);
               }
-            };
-
-            navigator.mediaDevices.getUserMedia(constraints)
-              .then(function(mediaStream) {
-                  video3.srcObject = mediaStream;
-                  video3.play();
-              })
-              .catch(function(err) {
-                  console.log("There's an error: " + err.message);
-              });
           }
+
+          getMediaStream();
 
           let change_MODE_LEFT;
           let MODE_LEFT = 0;
@@ -411,30 +434,6 @@
             return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
           }});
           hands.onResults(onResultsHands);
-
-          async function captureFrame() {
-            const track = video3.srcObject.getVideoTracks()[0];
-            const imageCapture = new ImageCapture(track);
-            try {
-              const bitmap = await imageCapture.grabFrame();
-              out3.width = bitmap.width;
-              out3.height = bitmap.height;
-
-              const ctx = out3.getContext('2d');
-              ctx.drawImage(bitmap, 0, 0);
-
-              const imageBitmap = await createImageBitmap(out3);
-              await hands.send({ image: imageBitmap });
-
-              requestAnimationFrame(captureFrame);
-            } catch (err) {
-              console.error('Error grabbing frame: ', err);
-            }
-          }
-
-          video3.onloadeddata = () => {
-              captureFrame();
-          };
 
           hands.setOptions({
             maxNumHands: 2,

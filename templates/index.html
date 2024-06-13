@@ -216,7 +216,10 @@
 
           function isFistLeft(landmarks) {
 
-            if (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100) {
+            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
+            && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
+            && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
+            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)) {
 
               if (change_MODE_LEFT) {
                 MODE_LEFT = MODE_LEFT === 2 ? 0 : MODE_LEFT + 1;
@@ -233,7 +236,10 @@
 
           function isFistRight(landmarks) {
 
-            if (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100) {   
+            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
+            && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
+            && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
+            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)) {   
 
               if (change_MODE_RIGHT) {
                 MODE_RIGHT = MODE_RIGHT === 2 ? 0 : MODE_RIGHT + 1;
@@ -383,8 +389,8 @@
                     z: zSum / palmLandmarks.length,
                   };
 
-                  let canvasX = palmMidpoint.x * video3.videoWidth; 
-                  let canvasY = palmMidpoint.y *  video3.videoHeight;
+                  let canvasX = Math.max(0, Math.min(video3.videoWidth, palmMidpoint.x * video3.videoWidth));
+                  let canvasY = Math.max(0, Math.min(video3.videoHeight, palmMidpoint.y * video3.videoHeight));
 
                   if (hand_detect === null || hand_detect !== classification.label) {
                     if (++hand_detectError === 4 || hand_detect === null) {

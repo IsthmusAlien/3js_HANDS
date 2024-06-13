@@ -99,3 +99,37 @@ h2 {
     font-family: "Roboto", sans-serif;
     font-weight: 400;
 }
+
+#popUp {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    background-color: rgba(0, 0, 0, 0.7);
+    pointer-events: all;
+}
+
+#popUpImage {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+#popUpBtn {
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1;
+    background-color: white;
+    border-radius: 5px;
+    text-decoration: #000;
+}

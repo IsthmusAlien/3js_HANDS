@@ -46,6 +46,10 @@
           </div>
         </div>
         <a id="link" href="https://sketchfab.com/3d-models/skull-salazar-downloadable-eeed09437afb4e1ea8a6ff3b0e9964ad">Model By jvitorsouzadesign</a>
+        <button id="popUpBtn" type="button">Instructions</button>
+        <div id="popUp" style="display : none;">
+          <img id="popUpImage" src="{{ url_for('static', filename='static/imgs/popUpimg.png') }}" alt="Image">
+        </div>
         <script type="module">
         
         import * as THREE from 'three';
@@ -168,6 +172,10 @@
         const IDLE_RIGHT = document.getElementById('idle_right');
 
         document.addEventListener('DOMContentLoaded', function() {
+
+          document.getElementById("popUpBtn").addEventListener("click", popIt);
+          document.getElementById("popUp").addEventListener("click", popClose);
+
           const constraints = { audio: false, video: { facingMode: "environment"} };
 
           async function getMediaStream() {
@@ -455,6 +463,21 @@
             })
           ]);
         });
+
+        const popUp = document.getElementById("popUp");
+        const popUpImg = document.getElementById("popUpImage");
+
+        function popIt() {
+          if (popUp.style.display === "none") {
+            popUp.style.display = "flex";
+          }
+        }
+
+        function popClose() {
+          if (popUp.style.display === "flex") {
+            popUp.style.display = "none";
+          }
+        }
 
         </script>
     </body>

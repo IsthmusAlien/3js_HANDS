@@ -227,7 +227,8 @@
             if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
             && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
             && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
-            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)) {
+            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)
+            && !palm_detect) {
 
               if (change_MODE_LEFT) {
                 MODE_LEFT = MODE_LEFT === 2 ? 0 : MODE_LEFT + 1;
@@ -247,7 +248,8 @@
             if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
             && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
             && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
-            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)) {   
+            && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)
+            && !palm_detect) {   
 
               if (change_MODE_RIGHT) {
                 MODE_RIGHT = MODE_RIGHT === 2 ? 0 : MODE_RIGHT + 1;
@@ -366,6 +368,8 @@
           let xSum = null, ySum = null, zSum = null;
           let hand_detectError = 0;
           let hand_detect = null;
+          let palm_detectError = 0;
+          let palm_detect = false;
 
           function onResultsHands(results) {
               document.body.classList.add('loaded');
@@ -376,6 +380,10 @@
                   if (hand_detectError !== 0 || hand_detect) {
                     hand_detectError = 0;
                     hand_detect = null;
+                  }
+                  if (palm_detect !== false || palm_detectError !== 0) {
+                    palm_detectError = 0;
+                    palm_detect = false;
                   }
                 }
                 for (let index = 0; index < results.multiHandLandmarks.length; index++) {
@@ -404,9 +412,14 @@
                     if (++hand_detectError === 4 || hand_detect === null) {
                       hand_detect = classification.label;
                       hand_detectError = 0;
+                      palm_detectError = 0;
+                      palm_detect = false;
                     }
                   } else {
                     hand_detectError = 0; 
+                    if (palm_detectError === 7) {
+                        palm_detect = !palm_detect;
+                    }
                   }
 
                   if (results.multiHandLandmarks.length === 1) {

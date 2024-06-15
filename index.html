@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>3js_HANDS</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='static/styles.css') }}">
-        <link rel="icon" sizes="300x300" href="{{ url_for('static', filename='static/imgs/logo.png') }}" type="image/png">
+        <link rel="stylesheet" href="public/static/styles.css">
+        <link rel="icon" sizes="300x300" href="public/static/imgs/logo.png" type="image/png">
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -48,10 +48,10 @@
         <a id="link" href="https://sketchfab.com/3d-models/skull-salazar-downloadable-eeed09437afb4e1ea8a6ff3b0e9964ad">Model By jvitorsouzadesign</a>
         <button id="popUpBtn" type="button">Instructions</button>
         <div id="popUp" style="display : none;">
-          <img id="popUpImage" src="{{ url_for('static', filename='static/imgs/popUpimg.png') }}" alt="Image">
+          <img id="popUpImage" src="public/static/imgs/popUpimg.png" alt="Image">
         </div>
         <script type="module">
-        
+
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { MapControls } from 'three/addons/controls/MapControls.js';
@@ -77,7 +77,7 @@
         controls.maxDistance = Infinity;
         controls.autoRotate = false;
         controls.target.set(0, 0, 0);
-        controls.screenSpacePanning = false; 
+        controls.screenSpacePanning = false;
         controls.update();
 
         const hemisphereLight_below = new THREE.HemisphereLight(0xffffff, 0x444444, 2.5);
@@ -138,7 +138,7 @@
 
         animate();
 
-       function scaleModelToFitView(model, camera) { 
+       function scaleModelToFitView(model, camera) {
           const boundingBox = new THREE.Box3().setFromObject(model);
           const size = boundingBox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
@@ -146,14 +146,14 @@
           const fov = camera.fov * (Math.PI / 180);
           const cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
 
-          const scaleFactor = cameraZ / maxDim * 0.75; 
+          const scaleFactor = cameraZ / maxDim * 0.75;
           model.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
           const boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
           const offset = boundingSphere.center;
-          model.position.sub(offset); 
+          model.position.sub(offset);
 
-          camera.position.set(0, 0, cameraZ * 1.5); 
+          camera.position.set(0, 0, cameraZ * 1.5);
           camera.lookAt(new THREE.Vector3(0, 0, 0));
           controls.target.set(0, 0, 0);
           controls.update();
@@ -224,7 +224,7 @@
 
           function isFistLeft(landmarks) {
 
-            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
+            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100)
             && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
             && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
             && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)
@@ -240,16 +240,16 @@
             return false;
           }
 
-          let change_MODE_RIGHT; 
+          let change_MODE_RIGHT;
           let MODE_RIGHT = 0;
 
           function isFistRight(landmarks) {
 
-            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100) 
+            if ((Math.round(landmarks[8].y*100)/100 <  Math.round(landmarks[6].y*100)/100)
             && (Math.round(landmarks[12].y*100)/100 <  Math.round(landmarks[10].y*100)/100)
             && (Math.round(landmarks[16].y*100)/100 <  Math.round(landmarks[14].y*100)/100)
             && (Math.round(landmarks[20].y*100)/100 <  Math.round(landmarks[18].y*100)/100)
-            && !palm_detect) {   
+            && !palm_detect) {
 
               if (change_MODE_RIGHT) {
                 MODE_RIGHT = MODE_RIGHT === 2 ? 0 : MODE_RIGHT + 1;
@@ -274,7 +274,7 @@
               ROTATE_Y_BOX.style.backgroundColor = "green";
               IDLE_RIGHT.style.backgroundColor = "red";
 
-              let dx = Math.round(currentPalmMidpoint.x*100)/100 - Math.round(prevPalmMidpoint.x*100)/100;              
+              let dx = Math.round(currentPalmMidpoint.x*100)/100 - Math.round(prevPalmMidpoint.x*100)/100;
               let yRotation = dx * rotationFactor;
               model.rotation.y += yRotation;
              } else if (MODE_RIGHT === 1) {
@@ -298,7 +298,7 @@
           }
 
         function moveAndzoomModelBasedOnPalmMovement (canvasX, canvasY, currentPalmMidpoint) {
-            
+
           if (MODE_LEFT === 0) {
 
             ZOOM_BOX.style.backgroundColor = "red";
@@ -307,9 +307,9 @@
 
             let vector = new THREE.Vector3();
             vector.set(
-              (canvasX / window.innerWidth) * 2 - 0.5, 
+              (canvasX / window.innerWidth) * 2 - 0.5,
               - (canvasY / window.innerHeight) * 2 + 0.5,
-              -1 
+              -1
             );
             vector.unproject(camera);
             let dir = vector.sub(camera.position).normalize();
@@ -322,9 +322,9 @@
             ZOOM_BOX.style.backgroundColor = "green";
             MOVE_BOX.style.backgroundColor = "red";
             IDLE_LEFT.style.backgroundColor = "red";
-            
+
             if (prevPalmMidpoint) {
-              let dy = Math.round(currentPalmMidpoint.y*100)/100 - Math.round(prevPalmMidpoint.y*100)/100; 
+              let dy = Math.round(currentPalmMidpoint.y*100)/100 - Math.round(prevPalmMidpoint.y*100)/100;
               let zZoom = dy * zoomFactor;
               camera.position.z += zZoom;
             }
@@ -343,8 +343,8 @@
 
         //  function areBothFist (results) {
 //
-        //    let LeftHandLandmarks, RightHandLandmarks; 
-        //    
+        //    let LeftHandLandmarks, RightHandLandmarks;
+        //
         //    if (results.multiHandedness[0].label === 'Right') {
         //      RightHandLandmarks = results.multiHandLandmarks[0];
         //      LeftHandLandmarks = results.multiHandLandmarks[1];
@@ -353,15 +353,15 @@
         //      LeftHandLandmarks = results.multiHandLandmarks[0];
         //    }
 //
-        //    if ((Math.round(LeftHandLandmarks[12].y*100)/100 <  Math.round(LeftHandLandmarks[10].y*100)/100) 
+        //    if ((Math.round(LeftHandLandmarks[12].y*100)/100 <  Math.round(LeftHandLandmarks[10].y*100)/100)
         //    && (Math.round(RightHandLandmarks[12].y*100)/100 <  Math.round(RightHandLandmarks[10].y*100)/100)) {
         //      return true;
-        //    }     
+        //    }
         //    return false;
         //  }
 //
         //  function zoomModelBasedOnPalmMovement (palmMidpoint) {
-        //    
+        //
         //  }
 
           const palmLandmarks = [0, 1, 5, 9, 13, 17];
@@ -416,7 +416,7 @@
                       palm_detect = false;
                     }
                   } else {
-                    hand_detectError = 0; 
+                    hand_detectError = 0;
                     if (palm_detectError === 7) {
                         palm_detect = !palm_detect;
                     }
@@ -437,12 +437,12 @@
                    //  } else {
                    //    //prevPalmMidpointLeft = null;
                    //    //prevPalmMidpointRight = null;
-                   //  } 
+                   //  }
                    //
                    //}
 
                 }
-              } 
+              }
           }
 
           const hands = new Hands({locateFile: (file) => {

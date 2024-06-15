@@ -8,7 +8,8 @@ Try it out [here](https://isthmusalien.github.io/3js_HANDS/)
 
 ### Dependencies
 
-* flask
+* Three.js
+* MediaPipe in JavaScript
 
 ### Executing program
 

@@ -1,6 +1,6 @@
 # 3js_HANDS
 
-This is a simple implementation of MediaPipe Hands in conjunction with the Three.js library.
+This is a simple implementation of MediaPipe Hands in conjunction with the Three.js library which trys to emulate VR interaction using hand gestures.
 
 Try it out [here](https://kiki54qweb.pythonanywhere.com/)
 

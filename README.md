@@ -11,12 +11,6 @@ Try it out [here](https://isthmusalien.github.io/3js_HANDS/)
 * Three.js
 * MediaPipe in JavaScript
 
-### Executing program
-
-```
-python app.py
-```
-
 ## Authors
 
 IsthmusAlien
